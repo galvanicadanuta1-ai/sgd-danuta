@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SGD - Sistema de Gestão Danuta</title>
+<style>
+:root {
+  --preto: #000;
+  --dourado: #FFD700;
+  --cinza-escuro: #111;
+  --cinza: #222;
+  --branco: #fff;
+}
+
+/* Reset / base */
+* { box-sizing: border-box; }
+html, body {
+  height: 100%;
+  margin: 0;
+  background: var(--preto);
+  color: var(--branco);
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+/* Visibilidade inicial */
+#capa { display: flex; height:100%; }
+#menuPrincipal, #paginaInterna { display: none; height:100%; }
+
+/* CAPA */
+#capa { justify-content:center; align-items:center; position:relative; }
+#capa img { width:100%; height:100%; object-fit:contain; }
+#capa button {
+  position:absolute; bottom:30px; right:30px;
+  background:var(--dourado); color:var(--preto);
+  padding:12px 24px; border-radius:8px; border:none;
+  font-weight:700; cursor:pointer; transition: .18s ease;
+}
+#capa button:hover { transform: scale(1.03); background:#ffcc00; }
+
+  
+/* Container principal */
+.container { display:flex; height:100%; }
+
+/* Sidebar */
+.sidebar {
+  width:250px; background:var(--cinza-escuro);
+  display:flex; flex-direction:column; justify-content:space-between;
+  padding:20px;
+}
+.buttons-top { display:flex; flex-direction:column; gap:10px; }
+.menu-btn, .icon-btn {
+  background:var(--cinza); color:var(--dourado); border:none;
+  padding:12px 16px; border-radius:6px; cursor:pointer; font-weight:700;
+  transition:.18s ease;
+}
+.menu-btn { text-align:left; padding:15px 20px; }
+.menu-btn:hover, .icon-btn:hover { background:var(--dourado); color:var(--preto); transform:scale(1.03); }
+.icon-btn { padding:10px 14px; font-size:18px; }
+
+/* Área de conteúdo */
+.main-content {
+  flex-grow:1; position:relative; height:100%;
+  padding:28px; overflow:auto;
+}
+
+/* Contêineres posicionados (externos) */
+.missao, .visao, .valores {
+  position:absolute;
+  width:30%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index: 5;
+}
+
+/* Posições pedidas */
+.missao { top:40px; left:40px; }
+.visao { top:50%; left:50%; transform: translate(-50%, -50%); }
+.valores { bottom:40px; right:40px; }
+
+/* Card interno */
+.card {
+  width:100%;
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  line-height:1.5;
+  opacity: 0;
+  padding: 8px;
+  transition: all 0.3s ease;
+}
+
+/* Títulos */
+h2 { color: var(--dourado); margin: 0 0 8px 0; }
+p { margin: 0; color: var(--branco); }
+
+/* Animações */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.missao .card { animation: fadeUp .6s ease forwards .2s; }
+.visao  .card { animation: fadeUp .6s ease forwards .45s; }
+.valores .card { animation: fadeUp .6s ease forwards .7s; }
+
+/* Hover glow nos blocos */
+.missao .card:hover,
+.visao .card:hover,
+.valores .card:hover {
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+  transform: scale(1.03);
+}
+
+/* Seta dourada */
+.seta-voltar {
+  display:flex; justify-content:center; align-items:center;
+  background-color:#222;
+  color:#FFD700;
+  border:none;
+  padding:10px 14px;
+  border-radius:8px;
+  cursor:pointer;
+  transition:all 0.3s ease;
+}
+.seta-voltar:hover {
+  background-color:#FFD700;
+  color:#000;
+  transform:translateX(-3px) scale(1.05);
+  box-shadow:0 0 10px rgba(255,215,0,0.4);
+}
+.seta-voltar svg { transition:transform 0.3s ease; }
+.seta-voltar:hover svg { transform:translateX(-2px); }
+
+/* Responsividade */
+@media (max-width: 900px) { .sidebar { width:200px; } .missao, .visao, .valores { width:40%; } }
+@media (max-width: 700px) {
+  .missao, .visao, .valores { position: static; width: 100%; margin-bottom: 24px; }
+  .main-content { display:flex; flex-direction:column; align-items:center; padding:20px; }
+  .missao .card, .visao .card, .valores .card { opacity:1; transform:none; animation:none; }
+}
+
+/* ======== LOGO SGD CENTRAL ======== */
+.placeholder-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  opacity: 0;
+  animation: fadeInLogo 1s ease forwards;
+}
+.placeholder-logo img {
+  width: 260px;
+  opacity: 0.4;
+  transition: opacity 0.4s ease;
+}
+@keyframes fadeInLogo {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+</style>
+</head>
+<body>
+
+<!-- CAPA -->
+<div id="capa">
+  <img src="https://i.imgur.com/jFEH9HU.png" alt="Capa SGD"/>
+  <button onclick="entrar()">Entrar</button>
+</div>
+
+<!-- MENU PRINCIPAL -->
+<div id="menuPrincipal" class="container">
+  <div class="sidebar">
+    <div class="buttons-top">
+      <button class="menu-btn" onclick="abrirPaginaInterna('Direção')">Direção</button>
+      <button class="menu-btn" onclick="abrirPaginaInterna('Produção')">Produção</button>
+      <button class="menu-btn" onclick="abrirPaginaInterna('Qualidade')">Qualidade</button>
+      <button class="menu-btn" onclick="abrirPaginaInterna('Compras')">Compras</button>
+      <button class="menu-btn" onclick="abrirPaginaInterna('Comercial')">Comercial</button>
+      <button class="menu-btn" onclick="abrirPaginaInterna('Recursos Humanos')">Recursos Humanos</button>
+    </div>
+    <div class="buttons-bottom">
+      <button class="icon-btn" onclick="voltarCapa()">🏠</button>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="missao">
+      <div class="card">
+        <h2>Missão</h2>
+        <p>Prestar serviços de forma segura e rentável, com responsabilidade social e ambiental, nas atividades de tratamentos de superfícies, buscando a excelência que atendam às exigências e necessidades de nossos clientes.</p>
+      </div>
+    </div>
+
+    <div class="visao">
+      <div class="card">
+        <h2>Visão</h2>
+        <p>Ser reconhecida como uma empresa de excelência no seguimento de tratamentos de superfícies, por oferecer serviços de alta qualidade, com o compromisso de aperfeiçoamento contínuo dos serviços com o desenvolvimento sustentável e rentabilidade nos negócios.</p>
+      </div>
+    </div>
+
+    <div class="valores">
+      <div class="card">
+        <h2>Valores</h2>
+        <p>Ética<br>Respeito com o próximo<br>Segurança<br>Foco em Resultados<br>Qualidade<br>Honestidade</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PÁGINA INTERNA -->
+<div id="paginaInterna" class="container">
+  <div class="sidebar">
+    <div class="buttons-top">
+      <h3 id="tituloSidebar">Página</h3>
+      <div id="botoesDinamicos"></div>
+    </div>
+    <div class="buttons-bottom">
+      <button class="icon-btn seta-voltar" onclick="voltarMenuPrincipal()" title="Voltar ao Menu Principal">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="main-content" id="conteudoContainer">
+    <div class="placeholder-logo" id="placeholderLogo">
+      <img src="https://i.imgur.com/jFEH9HU.png" alt="SGD Logo">
+    </div>
+  </div>
+</div>
+
+<script>
+const capa = document.getElementById('capa');
+const menuPrincipal = document.getElementById('menuPrincipal');
+const paginaInterna = document.getElementById('paginaInterna');
+const tituloSidebar = document.getElementById('tituloSidebar');
+const conteudoContainer = document.getElementById('conteudoContainer');
+const botoesDinamicos = document.getElementById('botoesDinamicos');
+
+function entrar() {
+  capa.style.display = 'none';
+  menuPrincipal.style.display = 'flex';
+}
+
+function voltarCapa() {
+  menuPrincipal.style.display = 'none';
+  capa.style.display = 'flex';
+}
+
+function abrirPaginaInterna(nome) {
+  menuPrincipal.style.display = 'none';
+  paginaInterna.style.display = 'flex';
+  tituloSidebar.textContent = nome;
+
+  conteudoContainer.innerHTML = `
+    <div class="placeholder-logo" id="placeholderLogo">
+      <img src="https://i.imgur.com/jFEH9HU.png" alt="SGD Logo">
+    </div>
+  `;
+
+  botoesDinamicos.innerHTML = "";
+
+  // ======== DIREÇÃO ========
+  if (nome === "Direção") {
+    adicionarBotao("Faturamento", "https://app.powerbi.com/view?r=eyJrIjoiNmI0Mjg0MzItYTk5MS00ZmE5LTkyMjctMmQzN2Q2NzhkNDJkIiwidCI6ImI1NTdmYWU3LTdjNjktNGM0Ni1hNzBlLTI3YWZjZGU4YzMyNSJ9");
+    adicionarBotao("Indicador de Gastos", "https://app.powerbi.com/view?r=eyJrIjoiNTlmMWRjODAtZWJkMy00NTY5LWE3MzQtN2Q3MGJmNzQ5ZWU1IiwidCI6ImI1NTdmYWU3LTdjNjktNGM0Ni1hNzBlLTI3YWZjZGU4YzMyNSJ9");
+  }
+
+  // ======== PRODUÇÃO ========
+  if (nome === "Produção") {
+    adicionarBotao("Indicador de Produção SGQ", "https://app.powerbi.com/view?r=eyJrIjoiNWM0ZDgzYWYtNDAwYy00ZDU3LWI1ODgtYjBhZjRmNWRkYjZjIiwidCI6ImI1NTdmYWU3LTdjNjktNGM0Ni1hNzBlLTI3YWZjZGU4YzMyNSJ9");
+    adicionarBotao("Indicador de Produção - (Demais Clientes)", "https://app.powerbi.com/view?r=eyJrIjoiOGU0NGNlMTktMGE2NS00YTBkLTgyNDUtNzUzMTI4YjY3OTBkIiwidCI6ImI1NTdmYWU3LTdjNjktNGM0Ni1hNzBlLTI3YWZjZGU4YzMyNSJ9");
+    adicionarBotao("Indicador de Produção - Macrosul", "https://app.powerbi.com/view?r=eyJrIjoiOWFhZmMwNDYtMmExNS00Y2EyLWFjNGItYWRhZGFlNWVkOGQ5IiwidCI6ImI1NTdmYWU3LTdjNjktNGM0Ni1hNzBlLTI3YWZjZGU4YzMyNSJ9");
+  }
+
+  // ======== QUALIDADE ========
+  if (nome === "Qualidade") {
+    adicionarBotao("Devolução - Retrabalho (RNC's)", "https://app.powerbi.com/view?r=eyJrIjoiMjVkZTBlZGQtNWJiNy00Mzg0LTg2ODMtOTVhOTI4ODEwYWFmIiwidCI6ImI1NTdmYWU3LTdjNjktNGM0Ni1hNzBlLTI3YWZjZGU4YzMyNSJ9");
+    adicionarBotao("Retrabalho Interno", "https://app.powerbi.com/view?r=eyJrIjoiNGRlNzZiODQtMTY5YS00NTg3LWIwNDMtNGFmNjRiMWEzN2IzIiwidCI6ImI1NTdmYWU3LTdjNjktNGM0Ni1hNzBlLTI3YWZjZGU4YzMyNSJ9");
+    adicionarBotao("Refugo de Produção", "https://app.powerbi.com/view?r=eyJrIjoiYzczNTZhZTgtZjkxNy00NmYxLThhMjQtOTNlOTE3MzE5MDFhIiwidCI6ImI1NTdmYWU3LTdjNjktNGM0Ni1hNzBlLTI3YWZjZGU4YzMyNSJ9");
+  }
+
+  // ======== COMPRAS ========
+  if (nome === "Compras") {
+    adicionarBotao("Fretes Especiais", "https://app.powerbi.com/view?r=eyJrIjoiNDQ1MDU0N2QtYTdmNS00ODkyLTg4MmEtYWVlNmFjNDMzMWU0IiwidCI6ImI1NTdmYWU3LTdjNjktNGM0Ni1hNzBlLTI3YWZjZGU4YzMyNSJ9");
+  }
+
+  // ======== COMERCIAL ========
+  if (nome === "Comercial") {
+    adicionarBotao("Cotações - Orçamentos", "https://app.powerbi.com/view?r=eyJrIjoiMzk1NjI2YjMtMDg3Ni00YjY0LTgwZmUtMzVjMDc5OTY2YTdjIiwidCI6ImI1NTdmYWU3LTdjNjktNGM0Ni1hNzBlLTI3YWZjZGU4YzMyNSJ9");
+  }
+
+  // ======== RECURSOS HUMANOS ========
+  if (nome === "Recursos Humanos") {
+    adicionarBotao("Acidentes de Trabalho", "https://app.powerbi.com/view?r=eyJrIjoiZTZiZmUzNjgtMTIyMC00ZjYyLTg0MDktNWVmY2Y4ZjU5MWJiIiwidCI6ImI1NTdmYWU3LTdjNjktNGM0Ni1hNzBlLTI3YWZjZGU4YzMyNSJ9");
+  }
+}
+
+function adicionarBotao(titulo, link) {
+  const botao = document.createElement('button');
+  botao.className = 'menu-btn';
+  botao.textContent = titulo;
+  botao.onclick = () => abrirPainel(link);
+  botoesDinamicos.appendChild(botao);
+}
+
+function abrirPainel(link) {
+  conteudoContainer.innerHTML = `
+    <iframe src="${link}" width="100%" height="100%" frameborder="0" allowfullscreen="true"></iframe>
+  `;
+}
+
+function voltarMenuPrincipal() {
+  paginaInterna.style.display = 'none';
+  menuPrincipal.style.display = 'flex';
+}
+</script>
+
+</body>
+</html>
